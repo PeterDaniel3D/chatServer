@@ -36,9 +36,14 @@ public class ClientHandler implements Runnable {
                 }
 
                 // Break the string into message and client
+                String command, client, message = "";
                 StringTokenizer stringTokenizer = new StringTokenizer(messageReceived, "#");
-                String command = stringTokenizer.nextToken();
-                String client = stringTokenizer.nextToken();
+                command = stringTokenizer.nextToken();
+                //TODO fix tokenizer dims, illegal input received
+                client = stringTokenizer.nextToken();
+                if (stringTokenizer.hasMoreTokens()) {
+                    message = stringTokenizer.nextToken();
+                }
 
                 // This is where the client gets online
                 if (command.equals("CONNECT") && ChatServer.userList.findUser(client)) {
@@ -49,16 +54,24 @@ public class ClientHandler implements Runnable {
                             if (ChatServer.userList.getStatus(clientHandler.name)) {
                                 clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
                             }
-
                         }
-
                     }
                 }
 
+                if (command.equals("SEND") && ChatServer.userList.getStatus(this.name) && !message.isEmpty()) {
+                    for (ClientHandler clientHandler : ChatServer.ar) {
+                        if (client.equals("*")) {
+                            clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
+                        } else if (ChatServer.userList.getStatus(client) && clientHandler.name.equals(client)) {
+                            clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
+                        }
+                    }
+                }
             } catch (IOException e) {
-               break;
+                break;
             }
         }
+        // Inform other clients about us not being online any longer
         ChatServer.userList.changeStatus(this.name, false);
         for (ClientHandler clientHandler : ChatServer.ar) {
             try {
