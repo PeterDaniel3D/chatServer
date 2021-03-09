@@ -9,26 +9,32 @@ import java.util.Vector;
 
 public class ChatServer {
 
+    // List for storing 'known' users
+    static UserList userList = new UserList();
+
     // Vector to store active clients
     static Vector<ClientHandler> ar = new Vector<>();
 
-    // counter for clients
-    static int i = 0;
-
-    //Call server with arguments like this: 0.0.0.0 8088 logfile.log
+    // Call server with arguments like this: 0.0.0.0 8088 logfile.log
     public static void main(String[] args) throws IOException {
 
         //TODO: Hardcoded list with users
+        userList.addUser(new User("Peter"));
+        userList.addUser(new User("René"));
+        userList.addUser(new User("Simon"));
+        userList.addUser(new User("Wehba"));
 
         String ip;
         int port;
         String logFile;
+        boolean isAlive = false;
 
         try {
             if (args.length == 3) {
                 ip = args[0];
                 port = Integer.parseInt(args[1]);
                 logFile = args[2];
+                isAlive = true;
             }
             else {
                 throw new IllegalArgumentException("Server not provided with the right arguments");
@@ -38,46 +44,45 @@ public class ChatServer {
             return;
         }
 
-        //TODO: Create Server
+        // Create server
+        if (isAlive) {
 
-        // server is listening on port 1234
-        ServerSocket ss = new ServerSocket(1234);
+            // Server is listening on port XXXX
+            ServerSocket serverSocket = new ServerSocket(port);
 
-        Socket s;
+            // Socket (Blocking call, waiting for client to connect)
+            Socket socket;
 
-        // running infinite loop for getting
-        // client request
-        while (true) {
-            // Accept the incoming request
-            s = ss.accept();
+            // Running infinite loop for getting client request
+            while (true) {
 
-            System.out.println("New client request received : " + s);
+                // Accept the incoming request
+                socket = serverSocket.accept();
 
-            // obtain input and output streams
-            DataInputStream dis = new DataInputStream(s.getInputStream());
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                System.out.println("New client request received : " + socket);
 
-            System.out.println("Creating a new handler for this client...");
+                // Obtain input and output streams
+                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-            // Create a new handler object for handling this request.
-            ClientHandler mtch = new ClientHandler(s, "client " + i, dis, dos);
+                System.out.println("Creating a new handler for this client...");
 
-            // Create a new Thread with this object.
-            Thread t = new Thread(mtch);
+                // Create a new handler object for handling this request.
+                ClientHandler clientHandler = new ClientHandler(socket, dataInputStream, dataOutputStream);
 
-            System.out.println("Adding this client to active client list");
+                // Create a new Thread with this object.
+                Thread clientThread = new Thread(clientHandler);
 
-            // add this client to active clients list
-            ar.add(mtch);
+                System.out.println("Adding this client to active client list");
 
-            t.setName("Peter");
-            // start the thread.
-            t.start();
+                // Add this client to active clients list
+                ar.add(clientHandler);
 
-            // increment i for new client.
-            // i is used for naming only, and can be replaced
-            // by any naming scheme
-            i++;
+                // Start the thread.
+                clientThread.start();
+
+                System.out.println("Waiting for new client to CONNECT");
+            }
         }
     }
 }

@@ -9,17 +9,16 @@ import java.util.StringTokenizer;
 
 public class ClientHandler implements Runnable{
     Scanner scn = new Scanner(System.in);
-    private String name;
+    private String name = "Guest";
     protected DataInputStream dis;
     protected DataOutputStream dos;
     Socket s;
     boolean isloggedin;
 
     // constructor
-    public ClientHandler(Socket s, String name, DataInputStream dis, DataOutputStream dos) {
+    public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos) {
         this.dis = dis;
         this.dos = dos;
-        this.name = name;
         this.s = s;
         this.isloggedin = true;
     }
