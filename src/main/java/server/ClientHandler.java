@@ -82,6 +82,8 @@ public class ClientHandler implements Runnable {
                             clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
                         } else if (ChatServer.userList.getStatus(client) && clientHandler.name.equals(client)) {
                             clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
+                        } else if (1==1) {
+                            // TODO SEND TO MULTIPLE USERS
                         }
                     }
                 }
@@ -115,6 +117,7 @@ public class ClientHandler implements Runnable {
 
 // Todo: CONNECT with same name from foreign client: What if user is already online ?
 // Todo: Illegal input was received, close connection
+// Todo: SEND, send to multiple users    SEND#Peter,Simon#Hello
 
 // Spørgsmål til Daniel:
 // Hvad menes der her? SEND -> "After a SEND command, the server can send an ONLINE, MESSAGE or a CLOSE command"
