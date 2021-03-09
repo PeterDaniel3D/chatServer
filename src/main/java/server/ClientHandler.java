@@ -35,11 +35,11 @@ public class ClientHandler implements Runnable {
                     break;
                 }
 
-                // Break the string into message and client
+                // Break the string into command, message and client
                 String command, client, message = "";
                 StringTokenizer stringTokenizer = new StringTokenizer(messageReceived, "#");
-                if (stringTokenizer.countTokens() > 1) {
-                    command = stringTokenizer.nextToken();
+                command = stringTokenizer.nextToken();
+                if ((command.equals("CONNECT") || command.equals("SEND")) && (stringTokenizer.countTokens() < 3)) {
                     client = stringTokenizer.nextToken();
                     if (stringTokenizer.hasMoreTokens()) {
                         message = stringTokenizer.nextToken();
