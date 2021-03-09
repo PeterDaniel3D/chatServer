@@ -38,24 +38,42 @@ public class ClientHandler implements Runnable {
                 // Break the string into message and client
                 String command, client, message = "";
                 StringTokenizer stringTokenizer = new StringTokenizer(messageReceived, "#");
-                command = stringTokenizer.nextToken();
-                //TODO fix tokenizer dims, illegal input received
-                client = stringTokenizer.nextToken();
-                if (stringTokenizer.hasMoreTokens()) {
-                    message = stringTokenizer.nextToken();
+                if (stringTokenizer.countTokens() > 1) {
+                    command = stringTokenizer.nextToken();
+                    client = stringTokenizer.nextToken();
+                    if (stringTokenizer.hasMoreTokens()) {
+                        message = stringTokenizer.nextToken();
+                    }
+                } else {
+                    // Only one token found
+                    dataOutputStream.writeUTF("CLOSE#1");
+                    this.socket.close();
+                    break;
                 }
 
                 // This is where the client gets online
-                if (command.equals("CONNECT") && ChatServer.userList.findUser(client)) {
-                    if (!ChatServer.userList.getStatus(client)) {
-                        ChatServer.userList.changeStatus(client, true);
-                        this.name = client;
-                        for (ClientHandler clientHandler : ChatServer.ar) {
-                            if (ChatServer.userList.getStatus(clientHandler.name)) {
-                                clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
+                if (command.equals("CONNECT") && this.name == "Guest") {
+                    if (ChatServer.userList.findUser(client)) {
+                        if (!ChatServer.userList.getStatus(client)) {
+                            ChatServer.userList.changeStatus(client, true);
+                            this.name = client;
+                            for (ClientHandler clientHandler : ChatServer.ar) {
+                                if (ChatServer.userList.getStatus(clientHandler.name)) {
+                                    clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
+                                }
                             }
                         }
+                    } else {
+                        // User not found
+                        dataOutputStream.writeUTF("CLOSE#2");
+                        this.socket.close();
+                        break;
                     }
+                } else if (command.equals("CONNECT") && this.name != "Guest") {
+                    // Cannot connect twice
+                    dataOutputStream.writeUTF("CLOSE#1");
+                    this.socket.close();
+                    break;
                 }
 
                 if (command.equals("SEND") && ChatServer.userList.getStatus(this.name) && !message.isEmpty()) {
@@ -71,20 +89,21 @@ public class ClientHandler implements Runnable {
                 break;
             }
         }
+
         // Inform other clients about us not being online any longer
         ChatServer.userList.changeStatus(this.name, false);
         for (ClientHandler clientHandler : ChatServer.ar) {
             try {
                 clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
             } catch (IOException e) {
-//                e.printStackTrace();
+                //e.printStackTrace();
             }
-
         }
 
         System.out.println("# Client disconnected (" + this.name + ") ");
+
+        // Close and release resources
         try {
-            // closing resources
             this.socket.close();
             this.dataInputStream.close();
             this.dataOutputStream.close();
@@ -93,3 +112,9 @@ public class ClientHandler implements Runnable {
         }
     }
 }
+
+// Todo: CONNECT with same name from foreign client: What if user is already online ?
+// Todo: Illegal input was received, close connection
+
+// Spørgsmål til Daniel:
+// Hvad menes der her? SEND -> "After a SEND command, the server can send an ONLINE, MESSAGE or a CLOSE command"
