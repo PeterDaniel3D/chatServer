@@ -4,66 +4,73 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class ClientHandler implements Runnable{
-    Scanner scn = new Scanner(System.in);
+
+    // Template
     private String name = "Guest";
-    protected DataInputStream dis;
-    protected DataOutputStream dos;
-    Socket s;
+    protected DataInputStream dataInputStream;
+    protected DataOutputStream dataOutputStream;
+    Socket socket;
     boolean isloggedin;
 
-    // constructor
-    public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos) {
-        this.dis = dis;
-        this.dos = dos;
-        this.s = s;
-        this.isloggedin = true;
+    // Constructor
+    public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) {
+        this.dataInputStream = dataInputStream;
+        this.dataOutputStream = dataOutputStream;
+        this.socket = socket;
     }
 
     @Override
     public void run() {
-        String received;
+
+        String messageReceived;
         while (true) {
             try {
-                // receive the string
-                received = dis.readUTF();
+                messageReceived = dataInputStream.readUTF();
+                System.out.println(messageReceived);
 
-                System.out.println(received);
-
-                if (received.equals("logout")) {
-                    this.isloggedin = false;
-                    this.s.close();
+                // Client requested a normal close
+                if (messageReceived.equals("CLOSE#")) {
                     break;
                 }
 
-                // break the string into message and recipient part
-                StringTokenizer st = new StringTokenizer(received, "#");
-                String MsgToSend = st.nextToken();
-                String recipient = st.nextToken();
+                // Break the string into message and client
+                StringTokenizer stringTokenizer = new StringTokenizer(messageReceived, "#");
+                String command = stringTokenizer.nextToken();
+                String client = stringTokenizer.nextToken();
 
-                // search for the recipient in the connected devices list.
-                // ar is the vector storing client of active users
-                for (ClientHandler mc : ChatServer.ar) {
-                    // if the recipient is found, write on its
-                    // output stream
-                    if (mc.name.equals(recipient) && mc.isloggedin == true) {
-                        mc.dos.writeUTF(this.name + " : " + MsgToSend);
-                        break;
+                if (command.equals("CONNECT") && ChatServer.userList.findUser(client)) {
+                    if (!ChatServer.userList.getStatus(client)) {
+                        ChatServer.userList.changeStatus(client, true);
+
+                        for (ClientHandler clientHandler : ChatServer.ar) {
+                            clientHandler.dataOutputStream.writeUTF("ONLINE#" + client);
+                        }
+
+
                     }
                 }
-            } catch (IOException e) {
 
+
+
+
+
+
+
+
+
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         try {
             // closing resources
-            this.dis.close();
-            this.dos.close();
-
+            this.socket.close();
+            this.dataInputStream.close();
+            this.dataOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
