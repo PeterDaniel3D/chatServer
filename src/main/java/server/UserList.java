@@ -41,4 +41,19 @@ public class UserList {
             }
         }
     }
+
+    public String showUsers() {
+        String string = "";
+        int counter = 0;
+        for (User user : userList) {
+            if (user.isOnline()) {
+                if (counter > 0){
+                    string += ",";
+                }
+                string += user.getName();
+                counter ++;
+            }
+        }
+        return string;
+    }
 }

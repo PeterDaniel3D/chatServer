@@ -6,14 +6,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler implements Runnable {
 
     // Template
     private String name = "Guest";
     protected DataInputStream dataInputStream;
     protected DataOutputStream dataOutputStream;
     Socket socket;
-    boolean isloggedin;
 
     // Constructor
     public ClientHandler(Socket socket, DataInputStream dataInputStream, DataOutputStream dataOutputStream) {
@@ -41,31 +40,36 @@ public class ClientHandler implements Runnable{
                 String command = stringTokenizer.nextToken();
                 String client = stringTokenizer.nextToken();
 
+                // This is where the client gets online
                 if (command.equals("CONNECT") && ChatServer.userList.findUser(client)) {
                     if (!ChatServer.userList.getStatus(client)) {
                         ChatServer.userList.changeStatus(client, true);
-
+                        this.name = client;
                         for (ClientHandler clientHandler : ChatServer.ar) {
-                            clientHandler.dataOutputStream.writeUTF("ONLINE#" + client);
-                        }
+                            if (ChatServer.userList.getStatus(clientHandler.name)) {
+                                clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
+                            }
 
+                        }
 
                     }
                 }
 
-
-
-
-
-
-
-
-
-
             } catch (IOException e) {
-                e.printStackTrace();
+               break;
             }
         }
+        ChatServer.userList.changeStatus(this.name, false);
+        for (ClientHandler clientHandler : ChatServer.ar) {
+            try {
+                clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
+            } catch (IOException e) {
+//                e.printStackTrace();
+            }
+
+        }
+
+        System.out.println("# Client disconnected (" + this.name + ") ");
         try {
             // closing resources
             this.socket.close();

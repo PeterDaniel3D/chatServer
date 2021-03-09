@@ -74,6 +74,7 @@ public class ChatClient {
                         System.out.println("# Connection to server lost");
                         System.exit(0);
                     }
+                    message.setLength(0);
                 }
             });
 
