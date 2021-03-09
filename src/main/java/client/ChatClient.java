@@ -37,8 +37,8 @@ public class ChatClient {
             System.out.println("# Couldn't connect to server");
         }
 
+        // Connected to server
         if (isAlive) {
-
             // obtaining input and out streams
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -72,10 +72,12 @@ public class ChatClient {
                         System.out.println(message.toString());
                     } catch (IOException e) {
                         System.out.println("# Connection to server lost");
+                        System.exit(0);
                     }
                 }
             });
 
+            // Start threads
             sendMessage.start();
             readMessage.start();
         }
