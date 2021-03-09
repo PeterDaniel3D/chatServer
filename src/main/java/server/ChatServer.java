@@ -18,7 +18,6 @@ public class ChatServer {
     // Call server with arguments like this: 0.0.0.0 8088 logfile.log
     public static void main(String[] args) throws IOException {
 
-        //TODO: Hardcoded list with users
         userList.addUser(new User("Peter"));
         userList.addUser(new User("René"));
         userList.addUser(new User("Simon"));
@@ -26,46 +25,46 @@ public class ChatServer {
 
         String ip;
         int port;
-        String logFile;
         boolean isAlive = false;
 
         try {
-            if (args.length == 3) {
+            if (args.length == 2) {
                 ip = args[0];
                 port = Integer.parseInt(args[1]);
-                logFile = args[2];
                 isAlive = true;
             }
             else {
-                throw new IllegalArgumentException("Server not provided with the right arguments");
+                throw new IllegalArgumentException("# Server not provided with the right arguments");
             }
         } catch (NumberFormatException ne) {
-            System.out.println("Illegal inputs provided when starting the server!");
+            System.out.println("# Illegal inputs provided when starting the server!");
             return;
         }
 
         // Create server
         if (isAlive) {
 
+            System.out.println("# Server created with ip: " + ip + " and port: " + port);
+
             // Server is listening on port XXXX
             ServerSocket serverSocket = new ServerSocket(port);
 
-            // Socket (Blocking call, waiting for client to connect)
+            // Socket (Waiting for client to connect)
             Socket socket;
 
             // Running infinite loop for getting client request
             while (true) {
 
-                // Accept the incoming request
+                // Accept the incoming request (Blocking call)
                 socket = serverSocket.accept();
 
-                System.out.println("New client request received : " + socket);
+                System.out.println("# New client request received : " + socket);
 
                 // Obtain input and output streams
                 DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
                 DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-                System.out.println("Creating a new handler for this client...");
+                System.out.println("# Creating a new handler for this client...");
 
                 // Create a new handler object for handling this request.
                 ClientHandler clientHandler = new ClientHandler(socket, dataInputStream, dataOutputStream);
@@ -73,7 +72,7 @@ public class ChatServer {
                 // Create a new Thread with this object.
                 Thread clientThread = new Thread(clientHandler);
 
-                System.out.println("Adding this client to active client list");
+                System.out.println("# Adding this client to active client list");
 
                 // Add this client to active clients list
                 ar.add(clientHandler);
@@ -81,7 +80,7 @@ public class ChatServer {
                 // Start the thread.
                 clientThread.start();
 
-                System.out.println("Waiting for new client to CONNECT");
+                System.out.println("# Waiting for new client to CONNECT");
             }
         }
     }

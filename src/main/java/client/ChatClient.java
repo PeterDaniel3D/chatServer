@@ -5,53 +5,79 @@ import java.net.*;
 import java.util.Scanner;
 
 public class ChatClient {
-    final static int ServerPort = 1234;
 
-    public static void main(String args[]) throws UnknownHostException, IOException {
-        Scanner scn = new Scanner(System.in);
+    public static void main(String args[]) throws IOException {
 
-        // getting localhost ip
-        InetAddress ip = InetAddress.getByName("localhost");
+        InetAddress ip;
+        int serverPort;
+        boolean isAlive = false;
 
-        // establish the connection
-        Socket s = new Socket(ip, ServerPort);
-
-        // obtaining input and out streams
-        DataInputStream dis = new DataInputStream(s.getInputStream());
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-
-        // sendMessage thread
-        Thread sendMessage = new Thread(() -> {
-            while (true) {
-                // read the message to deliver.
-                String msg = scn.nextLine();
-
-                try {
-                    // write on the output stream
-                    dos.writeUTF(msg);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        try {
+            if (args.length == 2) {
+                ip = InetAddress.getByName(args[0]);
+                serverPort = Integer.parseInt(args[1]);
             }
-        });
-
-        // readMessage thread
-        Thread readMessage = new Thread(() -> {
-
-            while (true) {
-                try {
-                    // read the message sent to this client
-                    String msg = dis.readUTF();
-                    System.out.println(msg);
-                } catch (IOException e) {
-
-                    e.printStackTrace();
-                }
+            else {
+                throw new IllegalArgumentException("# Server not provided with the right arguments");
             }
-        });
+        } catch (NumberFormatException ne) {
+            System.out.println("# Illegal inputs provided when starting the server!");
+            return;
+        }
 
-        sendMessage.start();
-        readMessage.start();
+        System.out.println("# Connecting to server: " + ip.getHostName() + " " + serverPort);
 
+        // Establish the connection
+        Socket socket = null;
+        try {
+            System.out.println("# Connection established...");
+            socket = new Socket(ip, serverPort);
+            isAlive = true;
+        } catch (IOException e) {
+            System.out.println("# Couldn't connect to server");
+        }
+
+        if (isAlive) {
+
+            // obtaining input and out streams
+            DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+            Scanner keyboard = new Scanner(System.in);
+
+            // Send messages
+            Thread sendMessage = new Thread(() -> {
+                StringBuilder message = new StringBuilder();
+                while (true) {
+                    // Read the message to deliver.
+                     message.append(keyboard.nextLine());
+
+                    try {
+                        // Write on the output stream
+                        dataOutputStream.writeUTF(message.toString());
+                    } catch (IOException e) {
+                        System.out.println("# Couldn't deliver message to server");
+                    }
+                    message.setLength(0);
+                }
+            });
+
+            // Read incoming messages
+            Thread readMessage = new Thread(() -> {
+                StringBuilder message = new StringBuilder();
+                while (true) {
+                    try {
+                        // Read the message sent to this client
+                         message.append(dataInputStream.readUTF());
+                        System.out.println(message.toString());
+                    } catch (IOException e) {
+                        System.out.println("# Connection to server lost");
+                    }
+                }
+            });
+
+            sendMessage.start();
+            readMessage.start();
+        }
     }
 }
