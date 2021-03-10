@@ -123,10 +123,6 @@ public class ClientHandler implements Runnable {
         }
     }
 }
-// 1.
-// TODO Vi skal lave et build af vores ChatServer og ChatClient. Serveren skal kunne køre fra vores Droplet,
-// og klienten skal kunne forbinde til den.
 
-// 2.
+// Todo: Nice-to-have.
 // Todo: CONNECT with same name from foreign client: What if user is already online ?
-// Todo: Illegal input was received, close connection
