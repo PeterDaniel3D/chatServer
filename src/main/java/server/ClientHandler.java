@@ -75,7 +75,8 @@ public class ClientHandler implements Runnable {
                     this.socket.close();
                     break;
                 }
-// SEND
+
+                // This is where we send messages
                 if (command.equals("SEND") && ChatServer.userList.getStatus(this.name) && !message.isEmpty()) {
                     for (ClientHandler clientHandler : ChatServer.ar) {
                         if (client.equals("*")) {
@@ -92,7 +93,6 @@ public class ClientHandler implements Runnable {
                                     clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
                                 }
                             }
-
                         }
                     }
                 }
@@ -124,13 +124,9 @@ public class ClientHandler implements Runnable {
     }
 }
 // 1.
-// Todo: SEND, send to multiple users    SEND#Peter,Simon#Hello
 // TODO Vi skal lave et build af vores ChatServer og ChatClient. Serveren skal kunne køre fra vores Droplet,
 // og klienten skal kunne forbinde til den.
 
 // 2.
 // Todo: CONNECT with same name from foreign client: What if user is already online ?
 // Todo: Illegal input was received, close connection
-
-// Spørgsmål til Daniel: MANGLER SVAR
-// Hvad menes der her? SEND -> "After a SEND command, the server can send an ONLINE, MESSAGE or a CLOSE command"

@@ -18,6 +18,7 @@ public class ChatServer {
     // Call server with arguments like this: 0.0.0.0 8088 logfile.log
     public static void main(String[] args) throws IOException {
 
+        // Add users to the list of users
         userList.addUser(new User("Peter"));
         userList.addUser(new User("René"));
         userList.addUser(new User("Simon"));
