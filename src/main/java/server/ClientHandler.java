@@ -75,15 +75,24 @@ public class ClientHandler implements Runnable {
                     this.socket.close();
                     break;
                 }
-
+// SEND
                 if (command.equals("SEND") && ChatServer.userList.getStatus(this.name) && !message.isEmpty()) {
                     for (ClientHandler clientHandler : ChatServer.ar) {
                         if (client.equals("*")) {
+                            // Send message to ALL clients
                             clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
                         } else if (ChatServer.userList.getStatus(client) && clientHandler.name.equals(client)) {
+                            // Send message to specific client
                             clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
-                        } else if (1==1) {
-                            // TODO SEND TO MULTIPLE USERS
+                        } else if (client.contains(",")) {
+                            // Send message to multiple clients
+                            String[] strings = client.split(",");
+                            for (String string : strings) {
+                                if (clientHandler.name.equals(string) && ChatServer.userList.getStatus(string)){
+                                    clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
+                                }
+                            }
+
                         }
                     }
                 }
