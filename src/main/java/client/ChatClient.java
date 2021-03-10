@@ -30,7 +30,6 @@ public class ChatClient {
         // Establish the connection
         Socket socket = null;
         try {
-            System.out.println("# Connection established...");
             socket = new Socket(ip, serverPort);
             isAlive = true;
         } catch (IOException e) {
@@ -39,6 +38,8 @@ public class ChatClient {
 
         // Connected to server
         if (isAlive) {
+            System.out.println("# Connection established...");
+
             // obtaining input and out streams
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());

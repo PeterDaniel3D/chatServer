@@ -38,21 +38,28 @@ public class ClientHandler implements Runnable {
                 // Break the string into command, message and client
                 String command, client, message = "";
                 StringTokenizer stringTokenizer = new StringTokenizer(messageReceived, "#");
-                command = stringTokenizer.nextToken();
-                if ((command.equals("CONNECT") || command.equals("SEND")) && (stringTokenizer.countTokens() < 3)) {
-                    client = stringTokenizer.nextToken();
-                    if (stringTokenizer.hasMoreTokens()) {
-                        message = stringTokenizer.nextToken();
+                if (stringTokenizer.countTokens() > 0) {
+                    command = stringTokenizer.nextToken();
+                    if ((command.equals("CONNECT") || command.equals("SEND")) && (stringTokenizer.countTokens() < 3)) {
+                        client = stringTokenizer.nextToken();
+                        if (stringTokenizer.hasMoreTokens()) {
+                            message = stringTokenizer.nextToken();
+                        }
+                    } else {
+                        // Only one token found
+                        dataOutputStream.writeUTF("CLOSE#1");
+                        this.socket.close();
+                        break;
                     }
                 } else {
-                    // Only one token found
+                    // No tokens found
                     dataOutputStream.writeUTF("CLOSE#1");
                     this.socket.close();
                     break;
                 }
 
                 // This is where the client gets online
-                if (command.equals("CONNECT") && this.name == "Guest") {
+                if (command.equals("CONNECT") && this.name.equals("Guest")) {
                     if (ChatServer.userList.findUser(client)) {
                         if (!ChatServer.userList.getStatus(client)) {
                             ChatServer.userList.changeStatus(client, true);
@@ -62,6 +69,12 @@ public class ClientHandler implements Runnable {
                                     clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
                                 }
                             }
+                            System.out.println("# Client connected (" + this.name + ") ");
+                        } else {
+                            // User already connected
+                            dataOutputStream.writeUTF("CLOSE#1");
+                            this.socket.close();
+                            break;
                         }
                     } else {
                         // User not found
@@ -69,7 +82,7 @@ public class ClientHandler implements Runnable {
                         this.socket.close();
                         break;
                     }
-                } else if (command.equals("CONNECT") && this.name != "Guest") {
+                } else if (command.equals("CONNECT")) {
                     // Cannot connect twice
                     dataOutputStream.writeUTF("CLOSE#1");
                     this.socket.close();
@@ -89,7 +102,7 @@ public class ClientHandler implements Runnable {
                             // Send message to multiple clients
                             String[] strings = client.split(",");
                             for (String string : strings) {
-                                if (clientHandler.name.equals(string) && ChatServer.userList.getStatus(string)){
+                                if (clientHandler.name.equals(string) && ChatServer.userList.getStatus(string)) {
                                     clientHandler.dataOutputStream.writeUTF("MESSAGE#" + this.name + "#" + message);
                                 }
                             }
@@ -102,12 +115,15 @@ public class ClientHandler implements Runnable {
         }
 
         // Inform other clients about us not being online any longer
-        ChatServer.userList.changeStatus(this.name, false);
-        for (ClientHandler clientHandler : ChatServer.ar) {
-            try {
-                clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
-            } catch (IOException e) {
-                //e.printStackTrace();
+        if (!this.name.equals("Guest")) {
+            ChatServer.userList.changeStatus(this.name, false);
+            ChatServer.ar.remove(this);
+            for (ClientHandler clientHandler : ChatServer.ar) {
+                try {
+                    clientHandler.dataOutputStream.writeUTF("ONLINE#" + ChatServer.userList.showUsers());
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                }
             }
         }
 
@@ -123,6 +139,3 @@ public class ClientHandler implements Runnable {
         }
     }
 }
-
-// Todo: Nice-to-have.
-// Todo: CONNECT with same name from foreign client: What if user is already online ?
