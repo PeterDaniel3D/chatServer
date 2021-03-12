@@ -20,8 +20,10 @@
   - En klient får ikke en CLOSE#1 når vedkommende prøver at logge på en bruger som allerede er connected.
   - Vi fandt også ud af, at vi ikke fjerner brugere fra vores Vector (ar) liste når de “disconnecter”.
 <br>
-<p>Ovenstående fejl er rettet.
-  
+<p>Ovenstående fejl er rettet.</p>
+<br>
+ Log: https://docs.google.com/document/d/1pEx3qP2eeY3Aa7B7DvJRa9dOMNV6M9T4a_M7MNBPyss/edit?usp=sharing
+ 
 <br><br><br><hr>
 
 ## Quick Start Project for the Chat - Server
